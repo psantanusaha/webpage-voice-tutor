@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "bootstrap": "sh scripts/bootstrap.sh",
     "start": "node relay.js",
     "dev": "node relay.js",
     "test": "node test-logic.js"
@@ -15,5 +16,8 @@
   "dependencies": {
     "express": "^5.2.1",
     "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "jsdom": "^28.1.0"
   }
 }

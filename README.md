@@ -27,8 +27,7 @@ Chrome extension + local Node relay server for real-time voice tutoring on any w
 ## Quick Start
 
 ```bash
-npm install
-cp .env.example .env
+npm run bootstrap
 # Set VOCALBRIDGE_API_KEY in .env
 npm start
 ```
@@ -59,6 +58,7 @@ Relay server runs on `http://localhost:3000` by default.
 
 ## Scripts
 
+- `npm run bootstrap`: install dependencies and create `.env` from `.env.example` if missing.
 - `npm start`: start relay server.
 - `npm run dev`: start relay server (same as start).
 - `npm test`: run local action logic tests.
