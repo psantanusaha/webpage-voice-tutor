@@ -1,10 +1,10 @@
-
+require('dotenv').config({ override: true });
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
-const API_KEY = process.env.VOCALBRIDGE_API_KEY;
+const API_KEY = (process.env.VOCALBRIDGE_API_KEY || '').trim();
 const DEFAULT_PARTICIPANT_NAME = process.env.PARTICIPANT_NAME || 'LearnAloud-User';
 
 app.disable('x-powered-by');
@@ -77,4 +77,31 @@ app.get('/livekit.js', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 Relay running at http://localhost:${PORT}`));
+const server = app.listen(PORT, () => {
+    console.log(`🚀 Relay running at http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+    console.error('❌ Server error:', err);
+    process.exit(1);
+});
+
+server.on('close', () => {
+    console.error('⚠️  Server closed.');
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('❌ Unhandled rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught exception:', err);
+});
+
+function shutdown(signal) {
+    console.log(`🛑 Received ${signal}, shutting down relay...`);
+    server.close(() => process.exit(0));
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
