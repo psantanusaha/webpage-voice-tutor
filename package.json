@@ -1,0 +1,19 @@
+{
+  "name": "webpage-voice-tutor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node relay.js",
+    "dev": "node relay.js",
+    "test": "node test-logic.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "node-fetch": "^2.7.0"
+  }
+}
