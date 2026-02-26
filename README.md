@@ -1,75 +1,70 @@
 # LearnAloud Webpage Voice Tutor
 
-Browser extension + local relay server for voice tutoring on arbitrary webpages.
+Chrome extension + local Node relay server for real-time voice tutoring on any webpage.
 
-## What This Project Does
+## Features
 
-The extension reads visible page content, streams audio to a LiveKit/VocalBridge-backed agent, and executes agent-driven page actions such as scrolling and highlighting.
+- Reads visible page content and sends structured context to an agent.
+- Streams microphone audio via LiveKit / VocalBridge.
+- Executes agent UI actions in-page (`scroll_to`, `highlight`).
+- Tracks user scrolling and publishes events back to the agent.
 
-## Architecture
+## Project Structure
 
-### 1. Browser extension (`extensions/`)
+- `extensions/manifest.json`: Chrome MV3 manifest.
+- `extensions/content.js`: Main extension runtime and DOM action logic.
+- `extensions/livekit.js`: Bundled LiveKit client (for extension-side load).
+- `relay.js`: Local relay server for token generation and SDK proxying.
+- `test-logic.js`: Local behavior tests for action execution.
 
-- `manifest.json`: MV3 manifest that injects scripts on all pages.
-- `content.js`: Main runtime:
-  - Starts/stops a tutoring session.
-  - Connects to LiveKit room with a token fetched from local relay.
-  - Maps page segments (`p`, `h1`, `h2`, `h3`, `li`) into `data-la-id` nodes.
-  - Sends page context and user scroll events over LiveKit data channel.
-  - Applies agent actions (`scroll_to`, `highlight`) in the DOM.
+## Prerequisites
 
-### 2. Local relay server (`relay.js`)
+- Node.js 18+
+- npm
+- VocalBridge API key
+- Chrome (or Chromium-based browser)
 
-- Provides `POST /token`:
-  - Accepts optional JSON body `{ "participant_name": "..." }`.
-  - Calls VocalBridge token API using `VOCALBRIDGE_API_KEY`.
-  - Returns token payload to extension.
-- Provides `GET /livekit.js`:
-  - Proxies LiveKit client SDK from jsDelivr.
-  - Helps bypass CSP restrictions on some websites.
-
-### 3. Test script (`test-logic.js`)
-
-- Minimal local logic test for action handling behavior (`scroll_to`, `highlight`, missing-id case).
-
-## Data Flow
-
-1. User triggers tutor (`Ctrl+Shift+S` or floating button).
-2. Extension ensures LiveKit SDK is loaded.
-3. Extension requests token from `http://localhost:3000/token`.
-4. Extension connects room, enables microphone, and sends `update_context`.
-5. Agent sends messages over data channel.
-6. Extension executes DOM actions and sends events back (heartbeat ack, user scroll).
-
-## Configuration
-
-Set environment variables before starting relay:
-
-- `VOCALBRIDGE_API_KEY` (required)
-- `PARTICIPANT_NAME` (optional, default: `LearnAloud-User`)
-- `PORT` (optional, default: `3000`)
-
-## Run Locally
+## Quick Start
 
 ```bash
 npm install
-VOCALBRIDGE_API_KEY=your_vb_key npm start
+cp .env.example .env
+# Set VOCALBRIDGE_API_KEY in .env
+npm start
 ```
 
-## NPM Scripts
+Relay server runs on `http://localhost:3000` by default.
 
-- `npm start`: Start relay server.
-- `npm run dev`: Start relay server (same as start).
-- `npm test`: Run local logic test script.
+## Environment Variables
 
-## Load Extension
+- `VOCALBRIDGE_API_KEY` required, used by relay `POST /token`.
+- `PARTICIPANT_NAME` optional, default `LearnAloud-User`.
+- `PORT` optional, default `3000`.
 
-1. Open Chrome `chrome://extensions`.
+## Load The Extension
+
+1. Open `chrome://extensions`.
 2. Enable Developer mode.
-3. Click "Load unpacked" and select the `extensions` folder.
-4. Open any webpage and click `Start Tutor` (top-right) or press `Ctrl+Shift+S`.
+3. Click **Load unpacked**.
+4. Select the `extensions/` folder from this repo.
+5. Open any webpage, then press `Ctrl+Shift+S` or click `Start Tutor`.
 
-## Notes
+## Architecture Overview
 
-- Keep `VOCALBRIDGE_API_KEY` out of source control.
-- The relay currently allows CORS from any origin for local development.
+1. Extension captures visible content (`p`, `h1`, `h2`, `h3`, `li`) and assigns `data-la-id`.
+2. Extension requests a token from local relay `POST /token`.
+3. Extension joins LiveKit room and starts microphone publishing.
+4. Agent sends actions (`scroll_to`, `highlight`) over data channel.
+5. Extension executes actions and publishes client events (scroll, heartbeat ack).
+
+## Scripts
+
+- `npm start`: start relay server.
+- `npm run dev`: start relay server (same as start).
+- `npm test`: run local action logic tests.
+
+## Security Notes
+
+- Do not commit real `.env` values.
+- Keep API keys only in local environment.
+- Relay CORS is currently broad for local development and should be restricted before production use.
